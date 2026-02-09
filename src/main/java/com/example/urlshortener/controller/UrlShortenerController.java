@@ -8,6 +8,13 @@ import com.example.urlshortener.exception.UrlExpiredException;
 import com.example.urlshortener.exception.UrlNotFoundException;
 import com.example.urlshortener.repository.ShortUrlRepository;
 import com.example.urlshortener.service.UrlShortenerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +24,7 @@ import java.net.URI;
 import java.util.Optional;
 
 @RestController
+@Tag(name = "URL Shortener", description = "API for creating and managing shortened URLs")
 public class UrlShortenerController {
     
     private final UrlShortenerService service;
@@ -28,7 +36,16 @@ public class UrlShortenerController {
     }
     
     @PostMapping("/api/urls")
+    @Operation(summary = "Create a shortened URL", 
+               description = "Creates a new shortened URL for the provided original URL with optional expiration date")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Short URL created successfully",
+                    content = @Content(schema = @Schema(implementation = CreateShortUrlResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid request - URL is empty or blank",
+                    content = @Content)
+    })
     public ResponseEntity<CreateShortUrlResponse> createShortUrl(
+            @Parameter(description = "Request containing the original URL and optional expiration date")
             @RequestBody CreateShortUrlRequest request,
             HttpServletRequest httpRequest) {
         
@@ -54,7 +71,18 @@ public class UrlShortenerController {
     }
     
     @GetMapping("/{shortKey}")
-    public ResponseEntity<Void> redirect(@PathVariable String shortKey) {
+    @Operation(summary = "Redirect to original URL", 
+               description = "Redirects to the original URL associated with the short key and increments visit count")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "302", description = "Redirect to original URL"),
+        @ApiResponse(responseCode = "404", description = "Short URL not found",
+                    content = @Content),
+        @ApiResponse(responseCode = "410", description = "Short URL has expired",
+                    content = @Content)
+    })
+    public ResponseEntity<Void> redirect(
+            @Parameter(description = "The short key to redirect")
+            @PathVariable String shortKey) {
         // Check if expired first
         if (service.isExpired(shortKey)) {
             throw new UrlExpiredException("Short URL has expired");
@@ -72,7 +100,16 @@ public class UrlShortenerController {
     }
     
     @GetMapping("/api/urls/{shortKey}")
+    @Operation(summary = "Get URL statistics", 
+               description = "Retrieves statistics for a shortened URL including visit count and creation time")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = UrlStatsResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Short URL not found",
+                    content = @Content)
+    })
     public ResponseEntity<UrlStatsResponse> getStats(
+            @Parameter(description = "The short key to get statistics for")
             @PathVariable String shortKey,
             HttpServletRequest httpRequest) {
         

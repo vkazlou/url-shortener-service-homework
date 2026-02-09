@@ -1,14 +1,27 @@
 package com.example.urlshortener.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+@Schema(description = "Statistics for a shortened URL")
 public class UrlStatsResponse {
     
+    @Schema(description = "The unique short key for the URL", example = "abc1234")
     private String shortKey;
+    
+    @Schema(description = "The complete shortened URL", example = "http://localhost:8080/abc1234")
     private String shortUrl;
+    
+    @Schema(description = "The original URL", example = "https://example.com/very/long/url")
     private String originalUrl;
+    
+    @Schema(description = "Number of times the short URL has been accessed", example = "42")
     private Long visitCount;
+    
+    @Schema(description = "When the short URL was created", example = "2026-02-09T12:00:00")
     private LocalDateTime createdAt;
+    
+    @Schema(description = "When the short URL expires (if set)", example = "2026-12-31T23:59:59")
     private LocalDateTime expiresAt;
     
     public UrlStatsResponse() {

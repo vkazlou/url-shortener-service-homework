@@ -1,10 +1,15 @@
 package com.example.urlshortener.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+@Schema(description = "Request to create a shortened URL")
 public class CreateShortUrlRequest {
     
+    @Schema(description = "The original URL to be shortened", example = "https://example.com/very/long/url", required = true)
     private String originalUrl;
+    
+    @Schema(description = "Optional expiration date/time for the shortened URL", example = "2026-12-31T23:59:59")
     private LocalDateTime expiresAt;
     
     public CreateShortUrlRequest() {
